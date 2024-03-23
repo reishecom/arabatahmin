@@ -1,56 +1,57 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Araba Fiyatı Tahmin Eden Model ve Deployment
-
-# In[18]:
+# In[1]:
 
 
-#import libraries
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score,mean_squared_error
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler,OneHotEncoder
+import pandas as pd #Veri manipülasyonu veri ile ilgili
+import numpy as np  #Matematik numarik kütüphane
+import matplotlib.pyplot as plt #Veri görselleştirme
+import seaborn as sns #Daha gelişmiş veri görselleştirme
+import warnings
+warnings.filterwarnings("ignore")
 
 
-# In[19]:
+# # araba fiyatı tahmin eden model deployment
+
+# In[5]:
 
 
-#Load data
-df=pd.read_excel('cars.xls')
+df = pd.read_excel("cars.xls")
+df
 
 
 # In[6]:
 
 
-df.head()
+#df.to_csv("cars.csv",index=False) #csv dosyasına çevirip kaydetme
 
 
-# In[7]:
+# In[10]:
 
 
-#df.to_csv('cars.csv',index=False)
+from sklearn.model_selection import train_test_split #Veri setinin %80'i egitim seti ve %20'i test seti olarak ayırma
+from sklearn.linear_model import LinearRegression #Lineer Regresyon modeli
+from sklearn.metrics import r2_score,mean_squared_error #Hata hesaplama
+from sklearn.pipeline import Pipeline #Pipline oluşturma
+from sklearn.preprocessing import StandardScaler,OneHotEncoder #Standartlasma
+from sklearn.compose import ColumnTransformer #Veri setinin %80'i egitim seti ve %20'i test seti olarak ayırma
 
 
-# In[20]:
+# In[12]:
 
 
-X=df.drop('Price',axis=1)
-y=df[['Price']]
+X=df.drop("Price",axis=1) #Bagımsız degiskenler
+y=df[["Price"]] #Bagımlı degisken
 
 
-# In[21]:
+# In[13]:
 
 
-X_train,X_test,y_train,y_test=train_test_split(X,y,
-                                               test_size=0.2,
-                                               random_state=42)
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42) #Veri setinin %80'i egitim seti ve %20'i test seti olarak ayırma
 
 
-# In[22]:
+# In[14]:
 
 
 preproccer=ColumnTransformer(transformers=[('num',StandardScaler(),
@@ -58,21 +59,23 @@ preproccer=ColumnTransformer(transformers=[('num',StandardScaler(),
                             ('cat',OneHotEncoder(),['Make','Model','Trim','Type'])])
 
 
-# In[23]:
+# In[21]:
 
 
-model=LinearRegression()
-pipe=Pipeline(steps=[('preprocessor',preproccer),
-                    ('model',model)])
-pipe.fit(X_train,y_train)
-y_pred=pipe.predict(X_test)
-mean_squared_error(y_test,y_pred)**0.5,r2_score(y_test,y_pred)
+model=LinearRegression() #Lineer Regresyon modeli
+pipe=Pipeline(steps=[('preproccer',preproccer),('model',model)]) #Pipline oluşturma
+
+pipe.fit(X_train,y_train) #Pipline uygulama
+y_pred=pipe.predict(X_test) #Tahmin
 
 
-# In[24]:
+mean_squared_error(y_test,y_pred)**0.5,r2_score(y_test,y_pred) #Hata hesaplama
 
 
-import streamlit as st
+# In[25]:
+
+
+import streamlit as st #Web uygulaması
 def price(make,model,trim,mileage,car_type,cylinder,liter,doors,cruise,sound,leather):
 	input_data=pd.DataFrame({
 		'Make':[make],
@@ -90,7 +93,7 @@ def price(make,model,trim,mileage,car_type,cylinder,liter,doors,cruise,sound,lea
 		})
 	prediction=pipe.predict(input_data)[0]
 	return prediction
-st.title("Car Price Prediction :red_car: @drmurataltun")
+st.title("Car Price Prediction :red_car: @Cem")
 st.write("Enter Car Details to predict the price of the car")
 make=st.selectbox("Make",df['Make'].unique())
 model=st.selectbox("Model",df[df['Make']==make]['Model'].unique())
